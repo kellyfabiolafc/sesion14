@@ -10,6 +10,27 @@ const CAMPOS = "id, marca, descripcion, precio, stock"; // Dato común
 // Los tiempos se expresan en milisegundos (1000 ms = 1 segundo).
 // Todas las funciones reciben y envían datos mediante pasarelas.
 // req significa que un parámetro es obligatorio y res representa el resultado.
+
+//crear - actualizar
+const validarCampos = ({ marca, descripcion, precio, stock } = {}) => {
+  const errores = [];
+
+  if (marca.trim() === "") errores.push("La marca es obligatoria");
+  if (descripcion.trim() === "") errores.push("La descripción es necesaria");
+  if (precio === undefined || isNaN(Number(precio)) || precio <= 0)
+    errores.push("Verifique el precio");
+  if (
+    stock === undefined ||
+    !Number.isInteger(Number(stock)) ||
+    Number(stock) < 0
+  )
+    errores.push("Error en el stock");
+
+  //Es posible tener más de un error
+  return errores;
+};
+
+//Api Rest => http://miaplicacion.com/api/productos
 const listarProductos = async (req, res) => {
   //Se utiliza try - catch porque existe una probabilidad de error
   try {
@@ -31,7 +52,7 @@ const listarProductos = async (req, res) => {
 };
 
 //Buscar ¿cómo funciona?
-//Api Rest => http://miaplicacion.com/api/productos/1
+//Api Rest => http://miaplicacion.com/api/productos/10
 
 const obtenerProducto = async (req, res) => {
   try {
@@ -74,8 +95,35 @@ const obtenerProducto = async (req, res) => {
 
 const crearProducto = async (req, res) => {
   try {
-  } catch (e) {
-    console.error(e);
+    const errores = validarCampos(req.body); // req.body contiene todos los datos a registrar
+
+    if (errores.length > 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Verifique los datos solicitados",
+        errores,
+      });
+    }
+
+    //Procedemos a guardar los datos
+    const { marca, descripcion, precio, stock } = req.body;
+
+    const consulta =
+      "INSERT INTO productos (marca, descripcion, precio, stock) VALUES (?,?,?,?)";
+
+    const [registro] = await pool.execute(consulta, [
+      marca,
+      descripcion,
+      precio,
+      stock,
+    ]);
+
+    res.status(201).json({
+      ok: true,
+      id: registro.insertId,
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({
       ok: false,
       message: "Error interno en el servidor",
