@@ -93,37 +93,90 @@ const obtenerProducto = async (req, res) => {
   }
 };
 
-const crearProducto = async(req, res) => {
-    try {
-        const errores = validarCampos(req.body) // req.body contiene todos los datos a registrar
-        if (errores.length > 0) {
-            return res.status(400).json({
-                ok: false,
-                message: 'Verifique los datos solicitados',
-                errores
-            })
-        }
-
-        // Procedemos a guardar los datos
-        const { marca, descripcion, precio, stock } = req.body
-        const consulta = `INSERT INTO productos (marca, descripcion, precio, stock) VALUES (?, ?, ?, ?)`
-        const [registro] = await pool.execute(consulta, [marca, descripcion, precio, stock])
-
-        res.status(201).json({
-            ok: true,
-            id: registro.insertId
-        })
-    } catch(e) {
-        console.error(e)
-        res.status(500).json({
-            ok: false,
-            message: 'Error interno en el servidor'
-        })
+const crearProducto = async (req, res) => {
+  try {
+    const errores = validarCampos(req.body); // req.body contiene todos los datos a registrar
+    if (errores.length > 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Verifique los datos solicitados",
+        errores,
+      });
     }
-}
+
+    // Procedemos a guardar los datos
+    const { marca, descripcion, precio, stock } = req.body;
+    const consulta = `INSERT INTO productos (marca, descripcion, precio, stock) VALUES (?, ?, ?, ?)`;
+    const [registro] = await pool.execute(consulta, [
+      marca,
+      descripcion,
+      precio,
+      stock,
+    ]);
+
+    res.status(201).json({
+      ok: true,
+      id: registro.insertId,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
 const actualizarProducto = async (req, res) => {
   try {
+    // Obtener el ID del producto a actualizar (obtenerProducto)
+    const id = Number(req.params.id);
+
+    if (id < 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "El ID no puede ser negativo",
+      });
+    }
+
+    // Validar los campos (crearProducto)
+    const errores = validarCampos(req.body);
+    if (errores.length > 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "Verifique los datos solicitados",
+        errores,
+      });
+    }
+
+    // ¿Y si el ID no existe?
+    const [existe] = await pool.execute(
+      "SELECT id FROM productos WHERE id = ?",
+      [id],
+    );
+    if (existe === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "El ID no existe",
+      });
+    }
+
+    // Finalmente actualizaremos...
+    const consulta =
+      "UPDATE productos SET marca=?, descripcion=?, precio=?, stock=? WHERE id=?";
+    const { marca, descripcion, precio, stock } = req.body;
+    const [resultado] = await pool.execute(consulta, [
+      marca,
+      descripcion,
+      precio,
+      stock,
+      id,
+    ]);
+
+    res.status(200).json({
+      ok: true,
+      filasAfectadas: resultado.affectedRows,
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({
