@@ -13,7 +13,8 @@ const productoRoutes = require('./producto.routes')
 const router = Router()
 
 //Esto es por cada ruta **
-router.use('/productos', productoRoutes)
-
+router.get('/', controller.listarProductos)
+router.get('/:id', controller.obtenerProducto)
+router.post('/', controller.crearProducto)
 //Se exportan todas las rutas
 module.exports = router
