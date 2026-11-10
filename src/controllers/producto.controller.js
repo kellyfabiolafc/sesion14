@@ -93,43 +93,34 @@ const obtenerProducto = async (req, res) => {
   }
 };
 
-const crearProducto = async (req, res) => {
-  try {
-    const errores = validarCampos(req.body); // req.body contiene todos los datos a registrar
+const crearProducto = async(req, res) => {
+    try {
+        const errores = validarCampos(req.body) // req.body contiene todos los datos a registrar
+        if (errores.length > 0) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Verifique los datos solicitados',
+                errores
+            })
+        }
 
-    if (errores.length > 0) {
-      return res.status(400).json({
-        ok: false,
-        message: "Verifique los datos solicitados",
-        errores,
-      });
+        // Procedemos a guardar los datos
+        const { marca, descripcion, precio, stock } = req.body
+        const consulta = `INSERT INTO productos (marca, descripcion, precio, stock) VALUES (?, ?, ?, ?)`
+        const [registro] = await pool.execute(consulta, [marca, descripcion, precio, stock])
+
+        res.status(201).json({
+            ok: true,
+            id: registro.insertId
+        })
+    } catch(e) {
+        console.error(e)
+        res.status(500).json({
+            ok: false,
+            message: 'Error interno en el servidor'
+        })
     }
-
-    //Procedemos a guardar los datos
-    const { marca, descripcion, precio, stock } = req.body;
-
-    const consulta =
-      "INSERT INTO productos (marca, descripcion, precio, stock) VALUES (?,?,?,?)";
-
-    const [registro] = await pool.execute(consulta, [
-      marca,
-      descripcion,
-      precio,
-      stock,
-    ]);
-
-    res.status(201).json({
-      ok: true,
-      id: registro.insertId,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      ok: false,
-      message: "Error interno en el servidor",
-    });
-  }
-};
+}
 
 const actualizarProducto = async (req, res) => {
   try {
