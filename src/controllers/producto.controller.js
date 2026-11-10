@@ -2,31 +2,84 @@
 // const objeto = require('') // TODOS LAS FUNCIONES
 // const { otroObjeto } = require('') // SOLO ALGUNAS FUNCIONES
 
-const { pool } = require('../config/database')
-const CAMPOS = 'id, marca, descripcion, precio, stock' // Dato común
-
+const { pool } = require("../config/database");
+const CAMPOS = "id, marca, descripcion, precio, stock"; // Dato común
 
 // Comentario: Define un campus con su identificador, marca, descripción, precio y stock.
 // Todas las funciones serán asíncronas para esperar los resultados.
 // Los tiempos se expresan en milisegundos (1000 ms = 1 segundo).
 // Todas las funciones reciben y envían datos mediante pasarelas.
 // req significa que un parámetro es obligatorio y res representa el resultado.
-const listarProductos = async (req, res)=> {}
+const listarProductos = async (req, res) => {
+  //Se utiliza try - catch porque existe una probabilidad de error
+  try {
+    const { productos } = await pool.query(
+      "SELECT * FROM productos ORDER BY id",
+    );
+    res.status(200).json({
+      ok: true,
+      total: productos.length,
+      data: productos,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
-const obtenerProducto = async (req, res)=> {}
+const obtenerProducto = async (req, res) => {
+  try {
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
-const crearProducto = async (req, res)=> {}
+const crearProducto = async (req, res) => {
+  try {
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
-const actualizarProducto = async (req, res)=> {}
+const actualizarProducto = async (req, res) => {
+  try {
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
-const eliminarProducto = async (req, res)=> {}
+const eliminarProducto = async (req, res) => {
+  try {
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      ok: false,
+      message: "Error interno en el servidor",
+    });
+  }
+};
 
 // Todos los métodos deben ser EXPORTADOS (se utilizarán desde la app)
 // el que lo utilizará será "routes"
 module.exports = {
-    listarProductos,
-    obtenerProducto,
-    crearProducto,
-    actualizarProducto,
-    eliminarProducto
-}
+  listarProductos,
+  obtenerProducto,
+  crearProducto,
+  actualizarProducto,
+  eliminarProducto,
+};
